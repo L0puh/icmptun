@@ -105,7 +105,6 @@ int recv_packet(int sockfd){
    len_addr = sizeof(cli_addr);
    while(GLOBAL.server_running){
       ASSERT((bytes = recvfrom(sockfd, buffer, BUFFER_SIZE, 0, (struct sockaddr*)&cli_addr, &len_addr)));
-
       ASSERT(parse_packet(buffer, bytes));
    }
    return 0;

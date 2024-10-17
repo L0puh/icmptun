@@ -28,8 +28,9 @@ unsigned short checksum(void *data, int len);
 
 char* read_file(const char* filename);
 
-
 int tun_alloc(char *dev, int flags);
-void tun_read();
+int tun_read(int tunfd, char* buffer, int len);
+int tun_write(int tunfd, char* buffer, int len);
+
 
 #endif

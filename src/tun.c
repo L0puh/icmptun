@@ -23,14 +23,21 @@ int tun_alloc(char *dev, int flags){
    return tunfd;
 }
 
-void tun_read(){
-   int bytes, tunfd;
-   char buffer[BUFFER_SIZE];
+int tun_write(int tunfd, char* buffer, int len){
+   int bytes;
 
-   tunfd = tun_alloc("tun0", IFF_TUN | IFF_NO_PI);
-
-   while(1){
-      bytes = read(tunfd, buffer, BUFFER_SIZE);
+   while (bytes < len){
+      bytes += write(tunfd, buffer, len);
       ASSERT(bytes);
    }
+
+   return bytes;
+}
+
+int tun_read(int tunfd, char* buffer, int len){
+   int bytes;
+   
+   bytes = read(tunfd, buffer, len);
+   ASSERT(bytes);
+   return bytes;
 }
