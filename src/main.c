@@ -10,6 +10,7 @@ int main(int argc, char* argv[]) {
    int opt, is_server;
    char *filename, *data, *ip;
    
+   tun_read();
    if (argc == 1) print_usage(argv[0]);
    while ((opt = getopt(argc, argv, "s:c:f:")) != -1){
       switch (opt) {

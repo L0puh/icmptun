@@ -119,8 +119,6 @@ int init_server(char* ip){
    setuid(getuid());
    GLOBAL.server_running = 1;
   
-   // TODO: add virtual interfaces?
-
    recv_packet(sockfd);
    
    return 0;
@@ -178,3 +176,5 @@ char* read_file(const char* filename){
   
    return buffer;
 }
+
+
