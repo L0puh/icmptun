@@ -1,2 +1,1 @@
-sudo ip addr add 203.0.113.1/24 dev tun0 &&
-sudo ip link set up dev tun0
+sudo ifconfig tun0 10.8.0.2/16 up

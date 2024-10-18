@@ -10,7 +10,6 @@ int main(int argc, char* argv[]) {
    int opt, is_server;
    char *filename, *data, *ip;
    
-   tun_read();
    if (argc == 1) print_usage(argv[0]);
    while ((opt = getopt(argc, argv, "s:c:f:")) != -1){
       switch (opt) {
@@ -27,18 +26,12 @@ int main(int argc, char* argv[]) {
             break;
          default:
             print_usage(argv[0]);
+            return 0;
       }
 
    }
-   if (!is_server && filename && ip){
-      data = read_file(filename);
-      if (data != NULL)
-         init_client(ip, data);
-      else 
-         printf("[-] ERROR: corrupted file: %s\n", filename);
-
-   } else if (is_server) {
-      init_server(ip);
+   if (ip){
+      tun_run(ip, is_server);
    } else {
       print_usage(argv[0]);
    }

@@ -17,11 +17,13 @@ struct global {
 };
 
 int init_server(char* ip);
-int init_client(char* ip, char* data);
+int init_client(char* ip, struct sockaddr_in* serv_addr);
+
 
 int parse_packet(char* buffer, size_t size);
+int send_in_chunks(int sockfd, char* data, struct sockaddr_in serv_addr);
 int send_packet(int sockfd, char* data, size_t data_size, struct sockaddr_in serv_addr);
-int recv_packet(int sockfd);
+int recv_packet(int sockfd, char* buffer, int len);
 
 void exit_on_error(char* file, const char* func, int line);
 unsigned short checksum(void *data, int len);
@@ -31,6 +33,8 @@ char* read_file(const char* filename);
 int tun_alloc(char *dev, int flags);
 int tun_read(int tunfd, char* buffer, int len);
 int tun_write(int tunfd, char* buffer, int len);
+int tun_run(char* ip, int is_server);
 
+int max(int a, int b);
 
 #endif

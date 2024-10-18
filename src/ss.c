@@ -10,21 +10,24 @@
 #include <unistd.h>
 
 
-static struct global GLOBAL;
 
-int init_client(char* ip, char* data){
-   char* chunk;
+int init_client(char* ip, struct sockaddr_in *serv_addr){
    int sockfd, bytes;
-   int chunk_size, offset, size;
-   struct sockaddr_in serv_addr;
    
-   bzero(&serv_addr, sizeof(serv_addr));
+   bzero(serv_addr, sizeof(*serv_addr));
    
-   serv_addr.sin_family = AF_INET;
-   serv_addr.sin_addr.s_addr = inet_addr(ip);
+   serv_addr->sin_family = AF_INET;
+   serv_addr->sin_addr.s_addr = inet_addr(ip);
 
    ASSERT((sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)));
-  
+
+   return sockfd;
+}
+
+int send_in_chunks(int sockfd, char* data, struct sockaddr_in serv_addr){
+   char* chunk;
+   int chunk_size, offset, size;
+
    offset = 0;
    size = strlen(data);
    while (offset < size && data != NULL){
@@ -36,8 +39,7 @@ int init_client(char* ip, char* data){
       ASSERT(send_packet(sockfd, chunk, chunk_size, serv_addr));
       free(chunk);
    }
-   
-   return 0;
+   return size;
 }
 
 int parse_packet(char* buffer, size_t size){
@@ -93,34 +95,26 @@ int send_packet(int sockfd, char* data, size_t data_size, struct sockaddr_in ser
    return bytes;
 }
 
-int recv_packet(int sockfd){
+int recv_packet(int sockfd, char* buffer, int len){
    int bytes;
    socklen_t len_addr;
-   char buffer[BUFFER_SIZE];
    struct sockaddr_in cli_addr;
 
    cli_addr.sin_family = AF_INET;
    cli_addr.sin_addr.s_addr = INADDR_ANY;
 
    len_addr = sizeof(cli_addr);
-   while(GLOBAL.server_running){
-      ASSERT((bytes = recvfrom(sockfd, buffer, BUFFER_SIZE, 0, (struct sockaddr*)&cli_addr, &len_addr)));
-      ASSERT(parse_packet(buffer, bytes));
-   }
-   return 0;
+   ASSERT((bytes = recvfrom(sockfd, buffer, len, 0, (struct sockaddr*)&cli_addr, &len_addr)));
+   return bytes;
 }
 
 int init_server(char* ip){
    int sockfd;
    
    ASSERT((sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)));
-   
    setuid(getuid());
-   GLOBAL.server_running = 1;
   
-   recv_packet(sockfd);
-   
-   return 0;
+   return sockfd;
 }
 
 unsigned short checksum(void *data, int len) {
@@ -147,7 +141,6 @@ void exit_on_error(char* file, const char* func, int line){
       exit(-1);
    }
 }
-
 
 char* read_file(const char* filename){
    int len;
@@ -177,3 +170,6 @@ char* read_file(const char* filename){
 }
 
 
+int max(int a, int b){
+   return a > b ? a: b;
+}
