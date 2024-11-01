@@ -30,10 +30,8 @@ unsigned short checksum(void *data, int len);
 
 char* read_file(const char* filename);
 
-int tun_alloc(char *dev, int flags);
-int tun_read(int tunfd, char* buffer, int len);
-int tun_write(int tunfd, char* buffer, int len);
-int tun_run(char* ip, int is_server);
+void run_client(char* filename, char* ip);
+void run_server(char* ip);
 
 int max(int a, int b);
 

@@ -1,5 +1,4 @@
 #include "ss.h"
-
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netinet/in.h>
@@ -8,7 +7,6 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
-
 
 
 int init_client(char* ip, struct sockaddr_in *serv_addr){
@@ -20,6 +18,7 @@ int init_client(char* ip, struct sockaddr_in *serv_addr){
    serv_addr->sin_addr.s_addr = inet_addr(ip);
 
    ASSERT((sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)));
+   printf("[+] client init\n");
 
    return sockfd;
 }
@@ -54,11 +53,13 @@ int parse_packet(char* buffer, size_t size){
       printf("failed, not an ICMP\n");
       return -1;
    }
-   if (icmp->icmp_type == ICMP_ECHO) { return 0; }
 
-   printf("RECV %zu bytes: ", size);
    hdr_len = ip->ip_hl << 2;
    icmp = (struct icmp*) (buffer + hdr_len);
+  
+   if (icmp->icmp_type == ICMP_ECHO) { return 0; }
+   printf("RECV %zu bytes: ", size);
+   
    size -= hdr_len;
    printf("size: %zu, ", size);
    if (size < 8) {
@@ -113,6 +114,7 @@ int init_server(char* ip){
    
    ASSERT((sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)));
    setuid(getuid());
+   printf("[+] server init\n");
   
    return sockfd;
 }
@@ -173,3 +175,30 @@ char* read_file(const char* filename){
 int max(int a, int b){
    return a > b ? a: b;
 }
+
+
+void run_client(char* filename, char* ip){
+   int sockfd;
+   char* data;
+   struct sockaddr_in servaddr;
+
+   sockfd = init_client(ip, &servaddr);
+   data = read_file(filename);
+   if (data == NULL) return;
+   send_packet(sockfd, data, strlen(data), servaddr);
+}
+
+void run_server(char* ip){
+   int sockfd, bytes;
+   char buffer[BUFFER_SIZE];
+   sockfd = init_server(ip);
+
+   while(1){
+      bytes = recv_packet(sockfd, buffer, BUFFER_SIZE);
+      if (bytes < 0) break;
+      if (parse_packet(buffer, bytes) < 0) break;
+   }
+
+   close(sockfd);
+}
+

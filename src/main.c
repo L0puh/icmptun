@@ -8,7 +8,7 @@ void print_usage(char* argv);
 
 int main(int argc, char* argv[]) {
    int opt, is_server;
-   char *filename, *data, *ip;
+   char *filename, *ip;
    
    if (argc == 1) print_usage(argv[0]);
    while ((opt = getopt(argc, argv, "s:c:f:")) != -1){
@@ -30,8 +30,10 @@ int main(int argc, char* argv[]) {
       }
 
    }
-   if (ip){
-      tun_run(ip, is_server);
+   if (ip && is_server){
+      run_server(ip);
+   } else if (ip && filename && !is_server){
+      run_client(filename, ip);
    } else {
       print_usage(argv[0]);
    }
